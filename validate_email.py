@@ -18,9 +18,7 @@ def get_mx_ip(hostname):
             MX_DNS_CACHE[hostname] = dns.resolver.query(hostname, 'MX')
         except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             MX_DNS_CACHE[hostname] = None
-
     return MX_DNS_CACHE[hostname]
-
 
 
 def validate_email(email, check_mx=False, verify=False, debug=False, smtp_timeout=10):
@@ -31,12 +29,7 @@ def validate_email(email, check_mx=False, verify=False, debug=False, smtp_timeou
     try:
         check_mx |= verify
         if check_mx:
-            hostname = email[email.find('@') + 1:]
-            # try:
-            #     mx_hosts = dns.resolver.query(hostname, 'MX')
-            # except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
-            #     return False
-            # mx_hosts = get_mx_ip(hostname)
+            hostname = email[email.find('@') + 1:
             if hostname in MX_DNS_CACHE:
                 mx_hosts = MX_DNS_CACHE[hostname]
             else:
@@ -92,7 +85,7 @@ if __name__ == '__main__':
 
     b = datetime.now()
 
-
+                             
     def validate(email):
         a = datetime.now()
         value = validate_email(email, verify=True)
