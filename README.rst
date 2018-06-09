@@ -26,13 +26,15 @@ TODO
 Installation
 ============
 
-TODO
+.. code-block:: console
+
+    pip install -r requirements.txt
 
 
 Usage
 -----
 
-
+see `usage.py <https://github.com/kakshay21/verify_email/usage.py>`
 
 Contribute
 ==========
