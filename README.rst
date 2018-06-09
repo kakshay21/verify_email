@@ -35,7 +35,7 @@ Installation
 Usage
 -----
 
-see `usage.py <https://github.com/kakshay21/verify_email/blob/master/usage.py>`_
+see `usage.py <https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py>`_
 
 Contribute
 ==========
