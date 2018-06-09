@@ -2,7 +2,7 @@
 verify_email
 ==================
 
-``verify_email`` is work inspired from [validate_email](https://pypi.org/project/validate_email/), in fact few improvements over that.
+``verify_email`` is work inspired from `validate_email <https://pypi.org/project/validate_email/>`_, in fact few improvements over that.
 
 
 Features
