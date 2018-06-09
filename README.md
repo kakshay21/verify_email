@@ -2,14 +2,13 @@
 
 ``verify_email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
 
-
 ## Features
 TODO
 
 ## Compatibility
-It is written in Python 2.7.
-Not tested in python3.X.
-It should work on Linux, Mac and Windows.
+- It is written in Python 2.7.
+- Not tested in python3.X.
+- It should work on Linux, Mac and Windows.
 
 ## Documentation
 TODO
