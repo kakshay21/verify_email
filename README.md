@@ -1,6 +1,6 @@
-# verify_email
+# verify-email
 
-``verify_email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
+``verify-email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
 
 ## Features
 TODO
@@ -16,7 +16,7 @@ TODO
 ## Installation
 ### From pypi.org
 ```
-pip install verify_email
+pip install verify-email
 ```
 ### From source code
 ```
@@ -27,7 +27,12 @@ python setup.py develop
 ```
 
 ## Usage
-see [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
+```
+>>> from verify_email import validate_email
+>>> validate_email("foo@bar.com")
+False
+```
+see for more details [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
 
 ## Contribute
 - Issue Tracker: https://github.com/kakshay21/verify_email/issues
