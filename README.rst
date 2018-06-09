@@ -2,19 +2,18 @@
 verify_email
 ==================
 
-``verify_email`` is a work inspired from `validate_email <https://pypi.org/project/validate_email/>`_, in fact few improvements over that.
+``verify_email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
 
 
 Features
 ========
 
 
-
 Compatibility
 =============
 
 It is written in Python 2.7.
-It should also work with older versions but that is not tested.
+Not tested in python3.X.
 It should work on Linux, Mac and Windows.
 
 
@@ -34,7 +33,7 @@ Installation
 Usage
 -----
 
-see `usage.py <https://github.com/kakshay21/verify_email/usage.py>`
+see `usage.py <https://github.com/kakshay21/verify_email/usage.py>`_
 
 Contribute
 ==========
