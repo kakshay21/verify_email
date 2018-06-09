@@ -27,7 +27,7 @@ python setup.py develop
 
 ## Usage
 ```
->>> from verify_email import validate_email
+>>> from verify_email.verify_email import validate_email
 >>> validate_email("foo@bar.com")
 False
 ```
