@@ -75,7 +75,7 @@ def validate_email(email, verify=True, debug=False, smtp_timeout=10):
             return None
     except AssertionError:
         return False
-    except (socket.error) as e:
+    except socket.error as e:
         if debug:
             logger.debug('ServerError or socket.error exception raised (%s).', e)
         return None
