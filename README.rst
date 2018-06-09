@@ -1,8 +1,8 @@
 ==================
-validate_email
+verify_email
 ==================
 
-``validate_email`` is work inspired from [validate_email](https://pypi.org/project/validate_email/), in fact few improvements over that.
+``verify_email`` is work inspired from [validate_email](https://pypi.org/project/validate_email/), in fact few improvements over that.
 
 
 Features
@@ -37,8 +37,8 @@ Usage
 Contribute
 ==========
 
-- Issue Tracker: https://github.com/kakshay21/validate_email/issues
-- Source Code: https://github.com/kakshay21/validate_email
+- Issue Tracker: https://github.com/kakshay21/verify_email/issues
+- Source Code: https://github.com/kakshay21/verify_email
 
 
 Support
