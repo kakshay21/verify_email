@@ -1,6 +1,5 @@
 import dns.resolver
 import logging
-import re
 import smtplib
 import socket
 

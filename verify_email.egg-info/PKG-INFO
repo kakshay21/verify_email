@@ -6,55 +6,42 @@ Home-page: https://github.com/kakshay21/verify_email
 Author: Kumar Akshay
 Author-email: k.akshay9721@gmail.com
 License: UNKNOWN
-Description: ==================
-        verify_email
-        ==================
+Description: # verify_email
         
         ``verify_email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
         
-        
-        Features
-        ========
-        
-        
-        Compatibility
-        =============
-        
-        It is written in Python 2.7.
-        Not tested in python3.X.
-        It should work on Linux, Mac and Windows.
-        
-        
-        Documentation
-        =============
-        
+        ## Features
         TODO
         
-        Installation
-        ============
+        ## Compatibility
+        - It is written in Python 2.7.
+        - Not tested in python3.X.
+        - It should work on Linux, Mac and Windows.
         
-        .. code-block:: console
+        ## Documentation
+        TODO
         
-            virtualenv env 
-            source env/bin/activate
-            pip install -r requirements.txt
+        ## Installation
+        ### From pypi.org
+        ```
+        pip install verify_email
+        ```
+        ### From source code
+        ```
+        virtualenv env 
+        source env/bin/activate
+        pip install -r requirements.txt
+        python setup.py develop
+        ```
         
+        ## Usage
+        see [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
         
-        Usage
-        -----
-        
-        see `usage.py <https://github.com/kakshay21/verify_email/blob/master/usage.py>`_
-        
-        Contribute
-        ==========
-        
+        ## Contribute
         - Issue Tracker: https://github.com/kakshay21/verify_email/issues
         - Source Code: https://github.com/kakshay21/verify_email
         
-        
-        Support
-        =======
-        
+        ## Support
         If you are having issues, please let me know.
         
 Platform: UNKNOWN
