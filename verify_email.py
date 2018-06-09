@@ -1,8 +1,5 @@
-from datetime import datetime
-
 import dns.resolver
 import logging
-import multiprocessing
 import re
 import smtplib
 import socket
@@ -22,21 +19,27 @@ def get_mx_ip(hostname):
     return MX_DNS_CACHE[hostname]
 
 
-def validate_email(email, check_mx=False, verify=False, debug=False, smtp_timeout=10):
-    """This will check valid email syntax by django validators and check hostname and local name
+def validate_email(email, verify=True, debug=False, smtp_timeout=10):
+    """This will check hostname and local name
     by using the updated library dns.resolver and verify the email by smtp library.
-    Caching the result in MX_DNS_CACHE to iprove performance.
+    Caching the result in MX_DNS_CACHE to improve performance.
     """
+    if debug:
+        logger = logging.getLogger('validate_email')
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger = None
+    
     try:
-        check_mx |= verify
-        if check_mx:
-            hostname = email[email.find('@') + 1:
+        if verify:
+            hostname = email[email.find('@')+1:]
             if hostname in MX_DNS_CACHE:
                 mx_hosts = MX_DNS_CACHE[hostname]
             else:
                 mx_hosts = get_mx_ip(hostname)
             if mx_hosts is None:
                 return False
+            
             for mx in mx_hosts:
                 try:
                     if not verify and mx in MX_CHECK_CACHE:
@@ -78,28 +81,3 @@ def validate_email(email, check_mx=False, verify=False, debug=False, smtp_timeou
             logger.debug('ServerError or socket.error exception raised (%s).', e)
         return None
     return True
-
-
-if __name__ == '__main__':
-    
-    emails = [] # add emails
-
-    b = datetime.now()
-
-                             
-    def validate(email):
-        a = datetime.now()
-        value = validate_email(email, verify=True)
-        delta = datetime.now() - a
-        print value, email, (delta.microseconds + delta.microseconds/1E6)
-
-    def lookup(email):
-        hostname = email[email.find('@') + 1:]
-        max_hosts = get_mx_ip(hostname)
-        return max_hosts
-
-    pool = multiprocessing.Pool()
-    result = pool.map(lookup, emails)
-    finalresult = pool.map(validate, emails)
-    delta = datetime.now() - b
-    print delta.seconds + delta.microseconds/1E6
