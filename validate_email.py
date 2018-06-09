@@ -1,10 +1,11 @@
+from datetime import datetime
+
+import dns.resolver
+import logging
+import multiprocessing
 import re
 import smtplib
-import logging
 import socket
-import dns.resolver
-from datetime import datetime
-import multiprocessing
 
 
 MX_DNS_CACHE = {}
