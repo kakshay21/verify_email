@@ -1,4 +1,4 @@
-# verify-email
+# verify-email v 1.0.0
 
 ``verify-email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
 
@@ -14,7 +14,7 @@ TODO
 TODO
 
 ## Installation
-### From pypi.org
+### From [pypi.org](https://pypi.org/project/verify-email/)
 ```
 pip install verify-email
 ```
