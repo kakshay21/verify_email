@@ -4,8 +4,8 @@
 
 ## Features
 - Cache domain lookups
-- Paralel running domain lookups and email verification
-- Syntax checkup (in progress)
+- Parallel running domain lookups and handler checks
+- Syntax checks (in progress)
 
 ## Compatibility
 - It is written in Python 2.7.
