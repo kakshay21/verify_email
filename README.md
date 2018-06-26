@@ -3,9 +3,11 @@
 ``verify-email`` can verify the email by efficiently checking the domain name and pinging the handler to verify its existence.
 
 ## Features
+- MX(Mail Exchange records) verification
+- Handler verification
 - Cache domain lookups
-- Parallel running domain lookups and handler checks
-- Syntax checks (in progress)
+- Parallel domain lookups and handler checks
+- Syntax checks
 
 ## Compatibility
 - It is written in Python 2.7.
