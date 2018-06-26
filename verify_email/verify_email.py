@@ -10,6 +10,8 @@ smtp = smtplib.SMTP(timeout=0.6)
 
 
 def get_mx_ip(hostname):
+    """Get MX record by hostname.
+    """
     if hostname not in MX_DNS_CACHE:
         try:
             MX_DNS_CACHE[hostname] = dns.resolver.query(hostname, 'MX')
@@ -34,6 +36,8 @@ def enable_logger(name):
 
 
 def get_mx_hosts(email):
+    """Caching the result in MX_DNS_CACHE to improve performance.
+    """
     hostname = email[email.find('@') + 1:]
     if hostname in MX_DNS_CACHE:
         mx_hosts = MX_DNS_CACHE[hostname]
@@ -42,7 +46,12 @@ def get_mx_hosts(email):
     return mx_hosts
 
 
-def handler_verify(mx_hosts, email, logger, debug, verify):
+def handler_verify(mx_hosts, email, debug, verify):
+    if debug:
+        logger = enable_logger('verify_email')
+    else:
+        logger = None
+
     for mx in mx_hosts:
         try:
             smtp.connect(mx.exchange.to_text())
@@ -78,38 +87,35 @@ def handler_verify(mx_hosts, email, logger, debug, verify):
         except smtplib.SMTPConnectError:
             if debug:
                 logger.debug(u'Unable to connect to %s.', mx)
+        except socket.error as e:
+            if debug:
+                logger.debug('ServerError or socket.error exception raised (%s).', e)
+            return None
     return None
 
 
 def validate_email(email, mass, verify=True, debug=False):
-    """This will check hostname and local name
-    by using the updated library dns.resolver and verify the email by smtp library.
-    Caching the result in MX_DNS_CACHE to improve performance.
+    """Validate email by syntax check, domain check and handler check.
     """
-    if debug:
-        logger = enable_logger('verify_email')
-    else:
-        logger = None
-
     if mass:
         result = []
         for e in email:
-            result.append(validate_email(e, mass=False, verify=True))
+            if re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", e):
+                if verify:
+                    mx_hosts = get_mx_hosts(e)
+                    if mx_hosts is None:
+                        result.append(False)
+                    else:
+                        result.append(handler_verify(mx_hosts, e, debug, verify))
+            else:
+                result.append(False)
         return result
     else:
         if re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-            try:
-                if verify:
-                    mx_hosts = get_mx_hosts(email)
-                    if mx_hosts is None:
-                        return False
-                    return handler_verify(mx_hosts, email, logger, debug, verify)
-            except AssertionError:
-                return False
-            except socket.error as e:
-                if debug:
-                    logger.debug('ServerError or socket.error exception raised (%s).', e)
-                return None
-            return True
+            if verify:
+                mx_hosts = get_mx_hosts(email)
+                if mx_hosts is None:
+                    return False
+                return handler_verify(mx_hosts, email, debug, verify)
         else:
             return False
