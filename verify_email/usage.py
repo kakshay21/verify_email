@@ -10,4 +10,4 @@ print(result, email)
 
 # Mass version
 result = validate_email(emails, mass=True, debug=True)
-print(result)
+print(result, emails)
