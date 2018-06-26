@@ -1,5 +1,4 @@
 from datetime import datetime
-from verify_email import get_mx_ip
 from verify_email import validate_email
 
 import multiprocessing
@@ -16,14 +15,7 @@ def validate(email):
     print(value, email, (delta.microseconds + delta.microseconds/1E6))
 
 
-def lookup(email):
-    hostname = email[email.find('@') + 1:]
-    max_hosts = get_mx_ip(hostname)
-    return max_hosts
-
-
 pool = multiprocessing.Pool()
-result = pool.map(lookup, emails)
-finalresult = pool.map(validate, emails)
+result = pool.map(validate, emails)
 delta = datetime.now() - b
 print(delta.total_seconds())

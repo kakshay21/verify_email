@@ -8,6 +8,7 @@ import threading
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
 smtp = smtplib.SMTP(timeout=0.6)
+threaded_result = None
 
 
 def get_mx_ip(hostname):
@@ -47,10 +48,11 @@ def handler_verify(mx_hosts, email, debug):
         logger = enable_logger('verify_email')
     else:
         logger = None
-    result = []
     for mx in mx_hosts:
-        network_calls(mx, email, debug, logger, result)
-    return result
+        res = network_calls(mx, email, debug, logger)
+        if res:
+            return res
+        return False
 
 
 def syntax_check(email):
@@ -87,22 +89,21 @@ def validate_email(email, mass, verify=True, debug=False):
 
 
 def handler_verify_multi_threaded(mx_hosts, email, debug):
+    global threaded_result
     if debug:
         logger = enable_logger('verify_email')
     else:
         logger = None
-    threads_result = []
-    threads = [threading.Thread(target=network_calls, args=(mx, email, debug, logger, threads_result)) for mx in mx_hosts]
+    threads = [threading.Thread(target=network_calls, args=(mx, email, debug, logger)) for mx in mx_hosts]
     for i in threads:
         i.start()
     for i in threads:
         i.join()
-    if True in threads_result:
-        return True
-    return None
+    return threaded_result
 
 
-def network_calls(mx, email, debug, logger, result):
+def network_calls(mx, email, debug, logger):
+    global threaded_result
     try:
         smtp.connect(mx.exchange.to_text())
         status, _ = smtp.helo()
@@ -110,18 +111,19 @@ def network_calls(mx, email, debug, logger, result):
             smtp.quit()
             if debug:
                 logger.debug(u'%s answer: %s - %s', mx, status, _)
-            result.append(False)
+            threaded_result = False
+            return False
         smtp.mail('')
         status, _ = smtp.rcpt(email)
         if status == 550:  # status code for wrong gmail emails
             smtp.quit()
             if debug:
                 logger.debug(u'%s answer: %s - %s', mx, status, _)
-            result.append(False)
+            threaded_result = False
             return False
         if status == 250:
             smtp.quit()
-            result.append(True)
+            threaded_result = True
             return True
 
         if debug:
@@ -136,18 +138,34 @@ def network_calls(mx, email, debug, logger, result):
     except socket.error as e:
         if debug:
             logger.debug('ServerError or socket.error exception raised (%s).', e)
-        result.append(None)
+        threaded_result = None
         return None
 
 
-def fast_validate_email(email):
+def fast_validate_email(email, mass):
     mx_hosts = []
-    t1 = threading.Thread(target=syntax_check, name='syntax_check', args=(email,))
-    t1.start()
-    t2 = threading.Thread(target=get_mx_hosts, name='get_mx_hosts', args=(email, mx_hosts))
-    t2.start()
-    t1.join()
-    t2.join()
-    if mx_hosts is None:
-        return False
-    return handler_verify_multi_threaded(mx_hosts, email)
+    if mass:
+        result = []
+        for e in email:
+            if syntax_check(e):
+                mx_hosts = get_mx_hosts(e)
+                if mx_hosts is None:
+                    result.append(False)
+                    continue
+                result.append(handler_verify_multi_threaded(mx_hosts, e, False))
+            else:
+                result.append(False)
+                continue
+        return result
+    else:
+        # t1 = threading.Thread(target=syntax_check, name='syntax_check', args=(email,))
+        # t1.start()
+        # t2 = threading.Thread(target=get_mx_hosts, name='get_mx_hosts', args=(email,))
+        # t2.start()
+        # t1.join()
+        # t2.join()
+        if syntax_check(email):
+            mx_hosts = get_mx_hosts(email)
+            if mx_hosts is None:
+                return False
+            return handler_verify_multi_threaded(mx_hosts, email, False)
