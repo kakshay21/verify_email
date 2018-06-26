@@ -1,28 +1,27 @@
 Metadata-Version: 2.1
 Name: verify-email
-Version: 0.0.2
+Version: 1.0.0
 Summary: A small package for email verification
 Home-page: https://github.com/kakshay21/verify_email
 Author: Kumar Akshay
 Author-email: k.akshay9721@gmail.com
 License: UNKNOWN
-Description: # verify-email
+Description: # verify-email 
         
-        ``verify-email`` can verify if the email exists or not by checking the domain name and pinging and verifying the handler.
+        ``verify-email`` can verify the email by efficiently checking the domain name and pinging the handler to verify its existence.
         
         ## Features
-        TODO
+        - Cache domain lookups
+        - Parallel running domain lookups and handler checks
+        - Syntax checks (in progress)
         
         ## Compatibility
         - It is written in Python 2.7.
         - Not tested in python3.X.
         - It should work on Linux, Mac and Windows.
         
-        ## Documentation
-        TODO
-        
         ## Installation
-        ### From pypi.org
+        ### From [pypi.org](https://pypi.org/project/verify-email/)
         ```
         pip install verify-email
         ```
@@ -30,13 +29,12 @@ Description: # verify-email
         ```
         virtualenv env 
         source env/bin/activate
-        pip install -r requirements.txt
         python setup.py develop
         ```
         
         ## Usage
         ```
-        >>> from verify_email import validate_email
+        >>> from verify_email.verify_email import validate_email
         >>> validate_email("foo@bar.com")
         False
         ```

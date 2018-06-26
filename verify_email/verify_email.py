@@ -6,7 +6,7 @@ import socket
 
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
-smtp = smtplib.SMTP(timeout=0.4)
+smtp = smtplib.SMTP(timeout=0.6)
 
 
 def get_mx_ip(hostname):
@@ -18,14 +18,23 @@ def get_mx_ip(hostname):
     return MX_DNS_CACHE[hostname]
 
 
-def validate_email(email, verify=True, debug=False, smtp_timeout=10):
+def validate_email(email, verify=True, debug=False):
     """This will check hostname and local name
     by using the updated library dns.resolver and verify the email by smtp library.
     Caching the result in MX_DNS_CACHE to improve performance.
     """
     if debug:
-        logger = logging.getLogger('validate_email')
+        logger = logging.getLogger('verify_email')
         logger.setLevel(logging.DEBUG)
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # add formatter to ch
+        ch.setFormatter(formatter)
+        # add ch to logger
+        logger.addHandler(ch)
     else:
         logger = None
     
@@ -41,9 +50,6 @@ def validate_email(email, verify=True, debug=False, smtp_timeout=10):
             
             for mx in mx_hosts:
                 try:
-                    if not verify and mx in MX_CHECK_CACHE:
-                        return MX_CHECK_CACHE[mx]
-                    
                     smtp.connect(mx.exchange.to_text())
                     MX_CHECK_CACHE[mx] = True
                     if not verify:
@@ -60,15 +66,20 @@ def validate_email(email, verify=True, debug=False, smtp_timeout=10):
                         continue
                     smtp.mail('')
                     status, _ = smtp.rcpt(email)
+                    if status == 550:  # status code for wrong gmail emails
+                        smtp.quit()
+                        if debug:
+                            logger.debug(u'%s answer: %s - %s', mx, status, _)
+                        return False
                     if status == 250:
                         smtp.quit()
                         return True
                     if debug:
                         logger.debug(u'%s answer: %s - %s', mx, status, _)
                     smtp.quit()
-                except smtplib.SMTPServerDisconnected:  # Server not permits verify user
+                except smtplib.SMTPServerDisconnected:
                     if debug:
-                        logger.debug(u'%s disconected.', mx)
+                        logger.debug(u'Server not permits verify user, %s disconected.', mx)
                 except smtplib.SMTPConnectError:
                     if debug:
                         logger.debug(u'Unable to connect to %s.', mx)

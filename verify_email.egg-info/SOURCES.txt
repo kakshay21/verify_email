@@ -7,4 +7,5 @@ verify_email/verify_email.py
 verify_email.egg-info/PKG-INFO
 verify_email.egg-info/SOURCES.txt
 verify_email.egg-info/dependency_links.txt
+verify_email.egg-info/requires.txt
 verify_email.egg-info/top_level.txt

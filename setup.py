@@ -18,4 +18,8 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
+    install_requires=[
+        # -*- Extra requirements: -*-
+        'dnspython>=1.15.0',
+    ],
 )
