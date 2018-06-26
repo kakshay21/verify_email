@@ -1,8 +1,8 @@
 import dns.resolver
 import logging
+import re
 import smtplib
 import socket
-import re
 
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
@@ -22,15 +22,10 @@ def get_mx_ip(hostname):
 
 def enable_logger(name):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    # create console handler and set level to debug
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
-    # create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # add formatter to ch
     ch.setFormatter(formatter)
-    # add ch to logger
     logger.addHandler(ch)
     return logger
 
@@ -51,17 +46,11 @@ def handler_verify(mx_hosts, email, debug, verify):
         logger = enable_logger('verify_email')
     else:
         logger = None
-
+    result = None
     for mx in mx_hosts:
         try:
             smtp.connect(mx.exchange.to_text())
             MX_CHECK_CACHE[mx] = True
-            if not verify:
-                try:
-                    smtp.quit()
-                except smtplib.SMTPServerDisconnected:
-                    pass
-                return True
             status, _ = smtp.helo()
             if status != 250:
                 smtp.quit()
@@ -74,10 +63,12 @@ def handler_verify(mx_hosts, email, debug, verify):
                 smtp.quit()
                 if debug:
                     logger.debug(u'%s answer: %s - %s', mx, status, _)
-                return False
+                result = False
+                break
             if status == 250:
                 smtp.quit()
-                return True
+                result = True
+                break
             if debug:
                 logger.debug(u'%s answer: %s - %s', mx, status, _)
             smtp.quit()
@@ -90,8 +81,9 @@ def handler_verify(mx_hosts, email, debug, verify):
         except socket.error as e:
             if debug:
                 logger.debug('ServerError or socket.error exception raised (%s).', e)
-            return None
-    return None
+            result = None
+            break
+    return result
 
 
 def validate_email(email, mass, verify=True, debug=False):

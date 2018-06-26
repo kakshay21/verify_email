@@ -1,6 +1,6 @@
 from datetime import datetime
-from verify_email import validate_email
 from verify_email import get_mx_ip
+from verify_email import validate_email
 
 import multiprocessing
 
