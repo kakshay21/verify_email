@@ -26,4 +26,4 @@ pool = multiprocessing.Pool()
 result = pool.map(lookup, emails)
 finalresult = pool.map(validate, emails)
 delta = datetime.now() - b
-print(delta.seconds + delta.microseconds/1E6)
+print(delta.total_seconds())
