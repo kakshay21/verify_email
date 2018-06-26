@@ -11,7 +11,7 @@ b = datetime.now()
 
 def validate(email):
     a = datetime.now()
-    value = validate_email(email)
+    value = validate_email(email, mass=False)
     delta = datetime.now() - a
     print(value, email, (delta.microseconds + delta.microseconds/1E6))
 

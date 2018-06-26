@@ -18,7 +18,7 @@ def get_mx_ip(hostname):
     return MX_DNS_CACHE[hostname]
 
 
-def validate_email(email, verify=True, debug=False):
+def validate_email(email, mass, verify=True, debug=False):
     """This will check hostname and local name
     by using the updated library dns.resolver and verify the email by smtp library.
     Caching the result in MX_DNS_CACHE to improve performance.
@@ -37,59 +37,66 @@ def validate_email(email, verify=True, debug=False):
         logger.addHandler(ch)
     else:
         logger = None
-    if re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-        try:
-            if verify:
-                hostname = email[email.find('@')+1:]
-                if hostname in MX_DNS_CACHE:
-                    mx_hosts = MX_DNS_CACHE[hostname]
-                else:
-                    mx_hosts = get_mx_ip(hostname)
-                if mx_hosts is None:
-                    return False
 
-                for mx in mx_hosts:
-                    try:
-                        smtp.connect(mx.exchange.to_text())
-                        MX_CHECK_CACHE[mx] = True
-                        if not verify:
-                            try:
-                                smtp.quit()
-                            except smtplib.SMTPServerDisconnected:
-                                pass
-                            return True
-                        status, _ = smtp.helo()
-                        if status != 250:
-                            smtp.quit()
-                            if debug:
-                                logger.debug(u'%s answer: %s - %s', mx, status, _)
-                            continue
-                        smtp.mail('')
-                        status, _ = smtp.rcpt(email)
-                        if status == 550:  # status code for wrong gmail emails
-                            smtp.quit()
-                            if debug:
-                                logger.debug(u'%s answer: %s - %s', mx, status, _)
-                            return False
-                        if status == 250:
-                            smtp.quit()
-                            return True
-                        if debug:
-                            logger.debug(u'%s answer: %s - %s', mx, status, _)
-                        smtp.quit()
-                    except smtplib.SMTPServerDisconnected:
-                        if debug:
-                            logger.debug(u'Server not permits verify user, %s disconected.', mx)
-                    except smtplib.SMTPConnectError:
-                        if debug:
-                            logger.debug(u'Unable to connect to %s.', mx)
-                return None
-        except AssertionError:
-            return False
-        except socket.error as e:
-            if debug:
-                logger.debug('ServerError or socket.error exception raised (%s).', e)
-            return None
-        return True
+    if mass:
+        result = []
+        for e in email:
+            result.append(validate_email(e, mass=False, verify=True))
+        return result
     else:
-        return False
+        if re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
+            try:
+                if verify:
+                    hostname = email[email.find('@')+1:]
+                    if hostname in MX_DNS_CACHE:
+                        mx_hosts = MX_DNS_CACHE[hostname]
+                    else:
+                        mx_hosts = get_mx_ip(hostname)
+                    if mx_hosts is None:
+                        return False
+
+                    for mx in mx_hosts:
+                        try:
+                            smtp.connect(mx.exchange.to_text())
+                            MX_CHECK_CACHE[mx] = True
+                            if not verify:
+                                try:
+                                    smtp.quit()
+                                except smtplib.SMTPServerDisconnected:
+                                    pass
+                                return True
+                            status, _ = smtp.helo()
+                            if status != 250:
+                                smtp.quit()
+                                if debug:
+                                    logger.debug(u'%s answer: %s - %s', mx, status, _)
+                                continue
+                            smtp.mail('')
+                            status, _ = smtp.rcpt(email)
+                            if status == 550:  # status code for wrong gmail emails
+                                smtp.quit()
+                                if debug:
+                                    logger.debug(u'%s answer: %s - %s', mx, status, _)
+                                return False
+                            if status == 250:
+                                smtp.quit()
+                                return True
+                            if debug:
+                                logger.debug(u'%s answer: %s - %s', mx, status, _)
+                            smtp.quit()
+                        except smtplib.SMTPServerDisconnected:
+                            if debug:
+                                logger.debug(u'Server not permits verify user, %s disconected.', mx)
+                        except smtplib.SMTPConnectError:
+                            if debug:
+                                logger.debug(u'Unable to connect to %s.', mx)
+                    return None
+            except AssertionError:
+                return False
+            except socket.error as e:
+                if debug:
+                    logger.debug('ServerError or socket.error exception raised (%s).', e)
+                return None
+            return True
+        else:
+            return False
