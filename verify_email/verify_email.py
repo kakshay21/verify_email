@@ -143,7 +143,6 @@ def network_calls(mx, email, debug, logger):
 
 
 def fast_validate_email(email, mass):
-    mx_hosts = []
     if mass:
         result = []
         for e in email:
