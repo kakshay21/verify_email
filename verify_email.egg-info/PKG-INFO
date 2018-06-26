@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: verify-email
-Version: 2.0.0
+Version: 2.1.0.dev0
 Summary: A small package for email verification
 Home-page: https://github.com/kakshay21/verify_email
 Author: Kumar Akshay
@@ -37,7 +37,7 @@ Description: # verify-email
         ## Usage
         ```
         >>> from verify_email.verify_email import validate_email
-        >>> validate_email("foo@bar.com")
+        >>> validate_email("foo@bar.com", mass=False)
         False
         ```
         see for more details [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
