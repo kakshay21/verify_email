@@ -2,6 +2,7 @@ README.md
 setup.py
 verify_email/__init__.py
 verify_email/fast_verify.py
+verify_email/fast_verify_thread.py
 verify_email/usage.py
 verify_email/verify_email.py
 verify_email.egg-info/PKG-INFO

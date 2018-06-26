@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: verify-email
-Version: 1.0.0
+Version: 2.0.0
 Summary: A small package for email verification
 Home-page: https://github.com/kakshay21/verify_email
 Author: Kumar Akshay
@@ -11,9 +11,11 @@ Description: # verify-email
         ``verify-email`` can verify the email by efficiently checking the domain name and pinging the handler to verify its existence.
         
         ## Features
+        - MX(Mail Exchange records) verification
+        - Handler verification
         - Cache domain lookups
-        - Parallel running domain lookups and handler checks
-        - Syntax checks (in progress)
+        - Parallel domain lookups and handler checks
+        - Syntax checks
         
         ## Compatibility
         - It is written in Python 2.7.

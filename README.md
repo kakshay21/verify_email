@@ -29,7 +29,7 @@ python setup.py develop
 ## Usage
 ```
 >>> from verify_email.verify_email import validate_email
->>> validate_email("foo@bar.com")
+>>> validate_email("foo@bar.com", mass=False)
 False
 ```
 see for more details [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
