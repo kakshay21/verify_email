@@ -9,7 +9,7 @@
 - Handler verification
 - Cache domain lookups (For multiple emails)
 - Multithread support (look in [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py))
-- Multiprocess efficient (look in [fast_verify.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/fast_verify.py))
+- Multiprocess efficient (not recommended but have a look in [fast_verify.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/fast_verify.py))
 
 ## Compatibility
 - It is written in Python 2.7.
