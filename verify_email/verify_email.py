@@ -90,6 +90,7 @@ def validate_email(email, verify=True, debug=False):
         else:
             return False
 
+verify_email = validate_email # naming consistency
 
 def handler_verify_multi_threaded(mx_hosts, email, debug):
     global threaded_result
