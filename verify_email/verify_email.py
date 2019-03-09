@@ -7,7 +7,6 @@ import threading
 
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
-smtp = smtplib.SMTP(timeout=0.6)
 threaded_result = None
 
 
@@ -105,7 +104,7 @@ def handler_verify_multi_threaded(mx_hosts, email, debug):
 def network_calls(mx, email, debug, logger):
     global threaded_result
     try:
-        smtp.connect(mx.exchange.to_text())
+        smtp = smtplib.SMTP(mx.exchange.to_text())
         status, _ = smtp.helo()
         if status != 250:
             smtp.quit()
