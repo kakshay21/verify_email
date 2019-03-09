@@ -46,13 +46,13 @@ def get_mx_hosts(email):
     return mx_hosts
 
 
-def handler_verify(mx_hosts, email, debug):
+def handler_verify(mx_hosts, email, debug, timeout=None):
     if debug:
         logger = enable_logger('verify_email')
     else:
         logger = None
     for mx in mx_hosts:
-        res = network_calls(mx, email, debug, logger)
+        res = network_calls(mx, email, debug, logger, timeout)
         if res:
             return res
         return False
@@ -64,7 +64,7 @@ def syntax_check(email):
     return False
 
 
-def validate_email(email, verify=True, debug=False):
+def validate_email(email, timeout=None, verify=True, debug=False):
     """Validate email by syntax check, domain check and handler check.
     """
     if is_list(email):
@@ -76,7 +76,8 @@ def validate_email(email, verify=True, debug=False):
                     if mx_hosts is None:
                         result.append(False)
                     else:
-                        result.append(handler_verify(mx_hosts, e, debug))
+                        result.append(handler_verify(mx_hosts, e, debug, 
+timeout))
             else:
                 result.append(False)
         return result
@@ -86,19 +87,19 @@ def validate_email(email, verify=True, debug=False):
                 mx_hosts = get_mx_hosts(email)
                 if mx_hosts is None:
                     return False
-                return handler_verify(mx_hosts, email, debug)
+                return handler_verify(mx_hosts, email, debug, timeout)
         else:
             return False
 
 verify_email = validate_email # naming consistency
 
-def handler_verify_multi_threaded(mx_hosts, email, debug):
+def handler_verify_multi_threaded(mx_hosts, email, debug, timeout=None):
     global threaded_result
     if debug:
         logger = enable_logger('verify_email')
     else:
         logger = None
-    threads = [threading.Thread(target=network_calls, args=(mx, email, debug, logger)) for mx in mx_hosts]
+    threads = [threading.Thread(target=network_calls, args=(mx, email, debug, logger, timeout)) for mx in mx_hosts]
     for i in threads:
         i.start()
     for i in threads:
@@ -106,10 +107,10 @@ def handler_verify_multi_threaded(mx_hosts, email, debug):
     return threaded_result
 
 
-def network_calls(mx, email, debug, logger):
+def network_calls(mx, email, debug, logger, timeout):
     global threaded_result
     try:
-        smtp = smtplib.SMTP(mx.exchange.to_text())
+        smtp = smtplib.SMTP(mx.exchange.to_text(), timeout=timeout)
         status, _ = smtp.helo()
         if status != 250:
             smtp.quit()
