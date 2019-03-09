@@ -13,7 +13,7 @@
 
 ## Compatibility
 - It is written in Python 2.7.
-- Not tested in python3.X.
+- Works on Python 3.7.
 - It should work on Linux, Mac and Windows.
 
 ## Installation
@@ -31,23 +31,19 @@ $ python setup.py develop
 ```
 
 ## Usage
-### For single email
 ```
->>> from verify_email.verify_email import validate_email
->>> validate_email("foo@bar.com", mass=False)
+>>> from verify_email import verify_email
+>>> verify_email("foo@bar.com")
 False
-```
-### For multiple emails
-```
->>> emails = ["foo@bar.com", "example@foo.com"]
->>> validate_email(emails, mass=True)
+>>> verify_email(["foo@bar.com", "example@foo.com"])
 [False, False]
 ```
-### Multithreaded Version (Single/Multiple emails)
+### Multithreaded
 ```
->>> from verify_email.verify_email import fast_validate_email
->>> fast_validate_email("foo@bar.com", mass=False)
-False
+>>> from verify_email import fast_verify_email
+>>> fast_validate_email(["foo@bar.com", 
+"bar@bar.com", "foo@foo.com", "bar@foo.com"])
+[False, False, False, False]
 ```
 see for more details [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
 
