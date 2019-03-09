@@ -173,3 +173,5 @@ def fast_validate_email(email):
             if mx_hosts is None:
                 return False
             return handler_verify_multi_threaded(mx_hosts, email, False)
+
+fast_verify_email = fast_validate_email
