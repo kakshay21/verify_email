@@ -4,11 +4,15 @@ import re
 import smtplib
 import socket
 import threading
+import collections.abc as abc
+
 
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
 threaded_result = None
 
+def is_list(o):
+    return isinstance(o, abc.Sequence) and not isinstance(o, str)
 
 def get_mx_ip(hostname):
     """Get MX record by hostname.
@@ -60,10 +64,10 @@ def syntax_check(email):
     return False
 
 
-def validate_email(email, mass, verify=True, debug=False):
+def validate_email(email, verify=True, debug=False):
     """Validate email by syntax check, domain check and handler check.
     """
-    if mass:
+    if is_list(email):
         result = []
         for e in email:
             if syntax_check(e):
@@ -141,8 +145,8 @@ def network_calls(mx, email, debug, logger):
         return None
 
 
-def fast_validate_email(email, mass):
-    if mass:
+def fast_validate_email(email):
+    if is_list(email):
         result = []
         for e in email:
             if syntax_check(e):
