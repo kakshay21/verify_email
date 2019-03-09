@@ -7,7 +7,7 @@
 - Syntax checks
 - MX(Mail Exchange records) verification
 - Handler verification
-- Cache domain lookups (For multiple emails)
+- Cache domain lookups
 - Multithread support (look in [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py))
 - Multiprocess efficient (not recommended but have a look in [fast_verify.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/fast_verify.py))
 
@@ -45,7 +45,7 @@ False
 "bar@bar.com", "foo@foo.com", "bar@foo.com"])
 [False, False, False, False]
 ```
-see for more details [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py)
+see for more examples [examples.py](https://github.com/kakshay21/verify_email/blob/master/examples.py)
 
 ## Contribute
 - Issue Tracker: https://github.com/kakshay21/verify_email/issues
