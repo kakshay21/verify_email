@@ -47,10 +47,9 @@ def get_mx_hosts(email):
 
 
 def handler_verify(mx_hosts, email, debug, timeout=None):
+    logger = None
     if debug:
         logger = enable_logger('verify_email')
-    else:
-        logger = None
     for mx in mx_hosts:
         res = network_calls(mx, email, debug, logger, timeout)
         if res:
@@ -76,8 +75,9 @@ def validate_email(email, timeout=None, verify=True, debug=False):
                     if mx_hosts is None:
                         result.append(False)
                     else:
-                        result.append(handler_verify(mx_hosts, e, debug, 
-timeout))
+                        result.append(
+                            handler_verify(mx_hosts, e, debug, timeout)
+                        )
             else:
                 result.append(False)
         return result
@@ -109,6 +109,8 @@ def handler_verify_multi_threaded(mx_hosts, email, debug, timeout=None):
 
 def network_calls(mx, email, debug, logger, timeout):
     global threaded_result
+    if not timeout:
+        timeout = 20
     try:
         smtp = smtplib.SMTP(mx.exchange.to_text(), timeout=timeout)
         status, _ = smtp.helo()
@@ -162,12 +164,6 @@ def fast_validate_email(email):
                 continue
         return result
     else:
-        # t1 = threading.Thread(target=syntax_check, name='syntax_check', args=(email,))
-        # t1.start()
-        # t2 = threading.Thread(target=get_mx_hosts, name='get_mx_hosts', args=(email,))
-        # t2.start()
-        # t1.join()
-        # t2.join()
         if syntax_check(email):
             mx_hosts = get_mx_hosts(email)
             if mx_hosts is None:
