@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verify_email",
-    version="2.3.0dev",
+    version="2.3.1",
     author="Kumar Akshay",
     author_email="k.akshay9721@gmail.com",
     description="A small package for email verification",
@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/kakshay21/verify_email",
     packages=setuptools.find_packages(),
     classifiers=(
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 2.7",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
