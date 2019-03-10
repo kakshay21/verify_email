@@ -8,7 +8,7 @@
 - MX(Mail Exchange records) verification
 - Handler verification
 - Cache domain lookups
-- Multithread support (look in [usage.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/usage.py))
+- Multithread support
 - Multiprocess efficient (not recommended but have a look in [fast_verify.py](https://github.com/kakshay21/verify_email/blob/master/verify_email/fast_verify.py))
 
 ## Compatibility
