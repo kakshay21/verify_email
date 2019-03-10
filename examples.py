@@ -1,9 +1,11 @@
 import dns.resolver
-resolver = dns.resolver.get_default_resolver()
-resolver.nameservers[0] = '8.8.8.8'
 from verify_email import verify_email
 from verify_email import fast_verify_email
 import time
+
+
+resolver = dns.resolver.get_default_resolver()
+resolver.nameservers[0] = '8.8.8.8'
 
 
 def time_it(func, *args, **kwargs):
@@ -17,6 +19,7 @@ emails = [
     "foo@bar.com",
     "ex@example.com"
 ]
+
 
 def test_single(email):
     print(email, "is", verify_email(email) and "valid" or "invalid")
