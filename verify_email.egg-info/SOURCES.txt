@@ -8,3 +8,5 @@ verify_email.egg-info/SOURCES.txt
 verify_email.egg-info/dependency_links.txt
 verify_email.egg-info/requires.txt
 verify_email.egg-info/top_level.txt
+verify_email/tests/__init__.py
+verify_email/tests/test_verify_email.py
