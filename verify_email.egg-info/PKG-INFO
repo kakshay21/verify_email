@@ -56,7 +56,7 @@ Description: # verify-email
         If you are having issues, please create an issue for it. And feel free to contribute as well 😄.
         
 Platform: UNKNOWN
-Classifier: Programming Language :: Python :: 3.7+
+Classifier: Programming Language :: Python :: 3.7
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Description-Content-Type: text/markdown
