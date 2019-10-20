@@ -1,5 +1,5 @@
 from datetime import datetime
-from verify_email import validate_email
+from verify_email import verify_email
 
 import multiprocessing
 
@@ -10,7 +10,7 @@ b = datetime.now()
 
 def validate(email):
     a = datetime.now()
-    value = validate_email(email, mass=False)
+    value = verify_email(email)
     delta = datetime.now() - a
     print(value, email, (delta.microseconds + delta.microseconds/1E6))
 

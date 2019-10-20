@@ -1,4 +1,5 @@
-import dns.resolver
+import asyncio
+import aiodns
 import logging
 import re
 import smtplib
@@ -9,23 +10,34 @@ import collections.abc as abc
 
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
-threaded_result = None
 
-def is_list(o):
-    return isinstance(o, abc.Sequence) and not isinstance(o, str)
+def is_list(obj):
+    return isinstance(obj, abc.Sequence) and not isinstance(obj, str)
 
-def get_mx_ip(hostname):
-    """Get MX record by hostname.
-    """
+async def get_mx_ip(hostname):
+    '''Get MX record by hostname.
+    '''
     if hostname not in MX_DNS_CACHE:
         try:
-            MX_DNS_CACHE[hostname] = dns.resolver.query(hostname, 'MX')
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+            resolver = aiodns.DNSResolver()
+            MX_DNS_CACHE[hostname] = await  resolver.query(hostname, 'MX')
+        except aiodns.error.DNSError as e:
             MX_DNS_CACHE[hostname] = None
     return MX_DNS_CACHE[hostname]
 
 
-def enable_logger(name):
+async def get_mx_hosts(email):
+    '''Caching the result in MX_DNS_CACHE to improve performance.
+    '''
+    hostname = email[email.find('@') + 1:]
+    if hostname in MX_DNS_CACHE:
+        mx_hosts = MX_DNS_CACHE[hostname]
+    else:
+        mx_hosts = await get_mx_ip(hostname)
+    return mx_hosts
+
+
+async def enable_logger(name):
     logger = logging.getLogger(name)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
@@ -34,140 +46,81 @@ def enable_logger(name):
     logger.addHandler(ch)
     return logger
 
-
-def get_mx_hosts(email):
-    """Caching the result in MX_DNS_CACHE to improve performance.
-    """
-    hostname = email[email.find('@') + 1:]
-    if hostname in MX_DNS_CACHE:
-        mx_hosts = MX_DNS_CACHE[hostname]
-    else:
-        mx_hosts = get_mx_ip(hostname)
-    return mx_hosts
-
-
-def handler_verify(mx_hosts, email, debug, timeout=None):
+async def handler_verify(mx_hosts, email, debug, timeout=None):
     logger = None
     if debug:
-        logger = enable_logger('verify_email')
+        logger = await enable_logger('verify_email')
     for mx in mx_hosts:
-        res = network_calls(mx, email, debug, logger, timeout)
+        res = await network_calls(mx, email, debug, logger, timeout)
         if res:
             return res
         return False
 
 
-def syntax_check(email):
-    if re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
+async def syntax_check(email):
+    if re.match(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)', email):
         return True
     return False
 
 
-def validate_email(email, timeout=None, verify=True, debug=False):
-    """Validate email by syntax check, domain check and handler check.
-    """
-    if is_list(email):
-        result = []
-        for e in email:
-            if syntax_check(e):
-                if verify:
-                    mx_hosts = get_mx_hosts(e)
-                    if mx_hosts is None:
-                        result.append(False)
-                    else:
-                        result.append(
-                            handler_verify(mx_hosts, e, debug, timeout)
-                        )
+async def _verify_email(email, timeout=None, verify=True, debug=False):
+    '''Validate email by syntax check, domain check and handler check.
+    '''
+    is_valid_syntax = await syntax_check(email)
+    if is_valid_syntax:
+        if verify:
+            mx_hosts = await get_mx_hosts(email)
+            if mx_hosts is None:
+                return False
             else:
-                result.append(False)
-        return result
+                return await handler_verify(mx_hosts, email, debug, timeout)
     else:
-        if syntax_check(email):
-            if verify:
-                mx_hosts = get_mx_hosts(email)
-                if mx_hosts is None:
-                    return False
-                return handler_verify(mx_hosts, email, debug, timeout)
-        else:
-            return False
+        return False
 
-verify_email = validate_email # naming consistency
+def verify_email(emails, timeout=None, verify=True, debug=False):
+    result = []
+    if not is_list(emails):
+        emails = [emails]
 
-def handler_verify_multi_threaded(mx_hosts, email, debug, timeout=None):
-    global threaded_result
-    if debug:
-        logger = enable_logger('verify_email')
-    else:
-        logger = None
-    threads = [threading.Thread(target=network_calls, args=(mx, email, debug, logger, timeout)) for mx in mx_hosts]
-    for i in threads:
-        i.start()
-    for i in threads:
-        i.join()
-    return threaded_result
+    for email in emails:
+        resp = asyncio.run(_verify_email(email, timeout, verify, debug))
+        result.append(resp)
 
+    return result if len(result) > 1 else result[0]
 
-def network_calls(mx, email, debug, logger, timeout):
-    global threaded_result
+async def network_calls(mx, email, debug, logger, timeout):
     if not timeout:
         timeout = 20
     try:
-        smtp = smtplib.SMTP(mx.exchange.to_text(), timeout=timeout)
-        status, _ = smtp.helo()
+        smtp = smtplib.SMTP(mx.host)
+        status, _ = smtp.ehlo()
         if status != 250:
             smtp.quit()
             if debug:
-                logger.debug(u'%s answer: %s - %s', mx, status, _)
-            threaded_result = False
+                logger.debug(f'{mx} answer: {status} - {_}')
             return False
         smtp.mail('')
         status, _ = smtp.rcpt(email)
-        if status == 550:  # status code for wrong gmail emails
+        if status >= 500:
             smtp.quit()
             if debug:
-                logger.debug(u'%s answer: %s - %s', mx, status, _)
-            threaded_result = False
+                logger.debug(f'{mx} answer: {status} - {_}')
             return False
         if status == 250:
             smtp.quit()
-            threaded_result = True
             return True
 
         if debug:
-            logger.debug(u'%s answer: %s - %s', mx, status, _)
+            logger.debug(f'{mx} answer: {status} - {_}', mx, status, _)
         smtp.quit()
+
     except smtplib.SMTPServerDisconnected:
         if debug:
-            logger.debug(u'Server not permits verify user, %s disconected.', mx)
+            logger.debug(f'Server not permits verify user, {mx} disconected.')
     except smtplib.SMTPConnectError:
         if debug:
-            logger.debug(u'Unable to connect to %s.', mx)
+            logger.debug(f'Unable to connect to {mx}.')
     except socket.error as e:
         if debug:
-            logger.debug('ServerError or socket.error exception raised (%s).', e)
-        threaded_result = None
+            logger.debug(f'ServerError or socket.error exception raised {e}.')
         return None
-
-
-def fast_validate_email(email):
-    if is_list(email):
-        result = []
-        for e in email:
-            if syntax_check(e):
-                mx_hosts = get_mx_hosts(e)
-                if mx_hosts is None:
-                    result.append(False)
-                    continue
-                result.append(handler_verify_multi_threaded(mx_hosts, e, False))
-            else:
-                result.append(False)
-                continue
-        return result
-    else:
-        if syntax_check(email):
-            mx_hosts = get_mx_hosts(email)
-            if mx_hosts is None:
-                return False
-            return handler_verify_multi_threaded(mx_hosts, email, False)
-
-fast_verify_email = fast_validate_email
