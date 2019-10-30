@@ -11,6 +11,27 @@ import collections.abc as abc
 MX_DNS_CACHE = {}
 MX_CHECK_CACHE = {}
 
+# Set up logging on module load and avoid adding 'ch' or 'logger' to module
+# namespace.  We could assign the logger to a module level name, but it is only
+# used by two functions, and this approach demonstrates using the 'logging'
+# namespace to retrieve arbitrary loggers.
+
+def setup_module_logger(name):
+    """Set up module level logging with formatting"""
+    logger = logging.getLogger(name)
+    ch = logging.StreamHandler()
+    # Really should not be configuring formats in a library, see
+    # https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+
+setup_module_logger('verify_email')
+
+
 def is_list(obj):
     return isinstance(obj, abc.Sequence) and not isinstance(obj, str)
 
@@ -37,21 +58,10 @@ async def get_mx_hosts(email):
     return mx_hosts
 
 
-async def enable_logger(name):
-    logger = logging.getLogger(name)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    return logger
 
-async def handler_verify(mx_hosts, email, debug, timeout=None):
-    logger = None
-    if debug:
-        logger = await enable_logger('verify_email')
+async def handler_verify(mx_hosts, email, timeout=None):
     for mx in mx_hosts:
-        res = await network_calls(mx, email, debug, logger, timeout)
+        res = await network_calls(mx, email, timeout)
         if res:
             return res
         return False
@@ -63,7 +73,7 @@ async def syntax_check(email):
     return False
 
 
-async def _verify_email(email, timeout=None, verify=True, debug=False):
+async def _verify_email(email, timeout=None, verify=True):
     '''Validate email by syntax check, domain check and handler check.
     '''
     is_valid_syntax = await syntax_check(email)
@@ -73,54 +83,53 @@ async def _verify_email(email, timeout=None, verify=True, debug=False):
             if mx_hosts is None:
                 return False
             else:
-                return await handler_verify(mx_hosts, email, debug, timeout)
+                return await handler_verify(mx_hosts, email, timeout)
     else:
         return False
 
 def verify_email(emails, timeout=None, verify=True, debug=False):
+    if debug:
+        logger = logging.getLogger('verify_email')
+        logger.setLevel(logging.DEBUG)
     result = []
     if not is_list(emails):
         emails = [emails]
 
     for email in emails:
-        resp = asyncio.run(_verify_email(email, timeout, verify, debug))
+        resp = asyncio.run(_verify_email(email, timeout, verify))
         result.append(resp)
 
     return result if len(result) > 1 else result[0]
 
-async def network_calls(mx, email, debug, logger, timeout):
-    if not timeout:
-        timeout = 20
+async def network_calls(mx, email, timeout=20):
+    logger = logging.getLogger('verify_email')
     try:
-        smtp = smtplib.SMTP(mx.host)
+        smtp = smtplib.SMTP(mx.host, timeout=timeout)
         status, _ = smtp.ehlo()
         if status != 250:
             smtp.quit()
-            if debug:
-                logger.debug(f'{mx} answer: {status} - {_}')
+            logger.debug(f'{mx} answer: {status} - {_}')
             return False
         smtp.mail('')
         status, _ = smtp.rcpt(email)
         if status >= 500:
             smtp.quit()
-            if debug:
-                logger.debug(f'{mx} answer: {status} - {_}')
+            logger.debug('{mx} answer: {status} - {_}')
             return False
         if status == 250:
             smtp.quit()
             return True
 
-        if debug:
-            logger.debug(f'{mx} answer: {status} - {_}', mx, status, _)
+        logger.debug(f'{mx} answer: {status} - {_}')
         smtp.quit()
 
     except smtplib.SMTPServerDisconnected:
-        if debug:
-            logger.debug(f'Server not permits verify user, {mx} disconected.')
+        logger.debug(f'Server does not permit verify user, {mx} disconnected.')
     except smtplib.SMTPConnectError:
-        if debug:
-            logger.debug(f'Unable to connect to {mx}.')
+        logger.debug(f'Unable to connect to {mx}.')
+    except socket.timeout as e:
+        logger.debug(f'Timeout connecting to server {mx}: {e}.')
+        return None
     except socket.error as e:
-        if debug:
-            logger.debug(f'ServerError or socket.error exception raised {e}.')
+        logger.debug(f'ServerError or socket.error exception raised {e}.')
         return None
