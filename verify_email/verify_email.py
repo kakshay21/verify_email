@@ -95,8 +95,10 @@ def verify_email(emails, timeout=None, verify=True, debug=False):
     if not is_list(emails):
         emails = [emails]
 
+    loop = asyncio.get_event_loop()
+
     for email in emails:
-        resp = asyncio.run(_verify_email(email, timeout, verify))
+        resp = loop.run_until_complete(_verify_email(email, timeout, verify))
         result.append(resp)
 
     return result if len(result) > 1 else result[0]
