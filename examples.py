@@ -1,5 +1,6 @@
-from verify_email import verify_email
+from verify_email import verify_email, verify_email_async
 import time
+import asyncio
 
 
 emails = [
@@ -23,6 +24,10 @@ def multiple():
     print('\t'.join(emails))
     print('\t'.join(i and 'valid' or 'invalid' for i in verify_email(emails)))
 
+async def main():
+    print('\t'.join(emails))
+    print('\t'.join(i and 'valid' or 'invalid' for i in await verify_email_async(emails)))
+
 
 print('### single')
 for email in emails:
@@ -30,3 +35,5 @@ for email in emails:
 print('### multiple')
 time_it(multiple)
 print('note that network condition may have impact on test results')
+print("asyncio test")
+asyncio.get_event_loop().run_until_complete(main())
