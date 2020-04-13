@@ -103,6 +103,20 @@ def verify_email(emails, timeout=None, verify=True, debug=False):
 
     return result if len(result) > 1 else result[0]
 
+async def verify_email_async(emails, timeout=None, verify=True, debug=False):
+    if debug:
+        logger = logging.getLogger('verify_email')
+        logger.setLevel(logging.DEBUG)
+    result = []
+    if not is_list(emails):
+        emails = [emails]
+
+
+    for email in emails:
+        result.append(await _verify_email(email, timeout, verify))
+
+    return result if len(result) > 1 else result[0]
+
 async def network_calls(mx, email, timeout=20):
     logger = logging.getLogger('verify_email')
     try:
