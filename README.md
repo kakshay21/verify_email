@@ -38,6 +38,13 @@ False
 >>> verify_email(['foo@bar.com', 'example@foo.com'])
 [False, False]
 ```
+Also, note that some emails will likely fail in validation, if so you can check the reason of failure
+using debug flag.
+```
+>>> from verify_email import verify_email
+>>> verify_email('foo@bar.com', debug=True)
+```
+
 see for more examples [examples.py](https://github.com/kakshay21/verify_email/blob/master/examples.py)
 
 ## Contribute
