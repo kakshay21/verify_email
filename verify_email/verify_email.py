@@ -95,6 +95,10 @@ def verify_email(emails, timeout=None, verify=True, debug=False):
     if not is_list(emails):
         emails = [emails]
 
+    # asyncio events doesn't fully support windows platform
+    # See: https://github.com/kakshay21/verify_email/issues/34#issuecomment-616971628
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     loop = asyncio.get_event_loop()
 
     for email in emails:
@@ -119,33 +123,34 @@ async def verify_email_async(emails, timeout=None, verify=True, debug=False):
 
 async def network_calls(mx, email, timeout=20):
     logger = logging.getLogger('verify_email')
+    result = False
     try:
         smtp = smtplib.SMTP(mx.host, timeout=timeout)
         status, _ = smtp.ehlo()
-        if status != 250:
+        if status >= 400:
             smtp.quit()
-            logger.debug(f'{mx} answer: {status} - {_}')
+            logger.debug(f'{mx} answer: {status} - {_}\n')
             return False
         smtp.mail('')
         status, _ = smtp.rcpt(email)
-        if status >= 500:
-            smtp.quit()
-            logger.debug('{mx} answer: {status} - {_}')
-            return False
-        if status == 250:
-            smtp.quit()
-            return True
+        if status >= 400:
+            logger.debug(f'{mx} answer: {status} - {_}\n')
+            result = False
+        if status >= 200 and status <= 250:
+            result = True
 
-        logger.debug(f'{mx} answer: {status} - {_}')
+        logger.debug(f'{mx} answer: {status} - {_}\n')
         smtp.quit()
 
     except smtplib.SMTPServerDisconnected:
-        logger.debug(f'Server does not permit verify user, {mx} disconnected.')
+        logger.debug(f'Server does not permit verify user, {mx} disconnected.\n')
     except smtplib.SMTPConnectError:
-        logger.debug(f'Unable to connect to {mx}.')
+        logger.debug(f'Unable to connect to {mx}.\n')
     except socket.timeout as e:
-        logger.debug(f'Timeout connecting to server {mx}: {e}.')
+        logger.debug(f'Timeout connecting to server {mx}: {e}.\n')
         return None
     except socket.error as e:
-        logger.debug(f'ServerError or socket.error exception raised {e}.')
+        logger.debug(f'ServerError or socket.error exception raised {e}.\n')
         return None
+
+    return result
