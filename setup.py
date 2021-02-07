@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='verify_email',
-    version='2.4.2',
+    version='2.4.3',
     author='Kumar Akshay',
     author_email='k.akshay9721@gmail.com',
     description='A small package for email verification',

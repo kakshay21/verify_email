@@ -6,6 +6,7 @@ import smtplib
 import socket
 import threading
 import collections.abc as abc
+import sys
 
 EMAIL_REGEX = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
 MX_DNS_CACHE = {}
