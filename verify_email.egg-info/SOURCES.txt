@@ -1,3 +1,4 @@
+LICENSE
 README.md
 setup.py
 verify_email/__init__.py
